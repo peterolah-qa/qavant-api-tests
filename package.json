@@ -1,0 +1,16 @@
+{
+  "name": "qavant-api-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "REST API test suite (Postman/Newman): full CRUD + auth against restful-booker, plus a production HTTP contract check on qavant.dev.",
+  "scripts": {
+    "test": "newman run qavant-api-tests.postman_collection.json -e restful-booker.postman_environment.json",
+    "test:report": "newman run qavant-api-tests.postman_collection.json -e restful-booker.postman_environment.json -r cli,htmlextra --reporter-htmlextra-export newman-report.html"
+  },
+  "author": "Peter — Qavant",
+  "license": "MIT",
+  "devDependencies": {
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1"
+  }
+}

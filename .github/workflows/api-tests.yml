@@ -1,0 +1,74 @@
+name: API Tests (Newman)
+
+# Quality gate + publisher: runs the Postman collection via Newman and writes
+# a status.json (assertion count, pass rate, run count) back to main so
+# qavant.dev can show REAL API metrics. status.json pushes are path-ignored
+# below so they never re-trigger this workflow.
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['status.json']
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '30 6 * * *'   # daily, just after the UI suite
+  workflow_dispatch:
+
+permissions:
+  contents: write   # needed to commit status.json back to the repo
+
+jobs:
+  newman:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Newman
+        run: npm install -g newman newman-reporter-htmlextra
+
+      - name: Run API collection
+        id: newman
+        continue-on-error: true   # publish status even when assertions fail
+        run: >
+          newman run qavant-api-tests.postman_collection.json
+          -e restful-booker.postman_environment.json
+          -r cli,htmlextra,json
+          --reporter-htmlextra-export newman-report.html
+          --reporter-json-export newman-report.json
+
+      - name: Generate status.json
+        if: always()
+        run: node scripts/report-status.mjs
+
+      - name: Publish status.json to main
+        if: always() && github.event_name != 'pull_request'
+        run: |
+          git config user.name "qavant-ci"
+          git config user.email "ci@qavant.dev"
+          git add status.json
+          git diff --staged --quiet && exit 0 || git commit -m "chore: update API status [skip ci]"
+          # main may have moved while the run was in flight — rebase, keep our
+          # status.json on conflict, retry once.
+          git push || {
+            git fetch origin main
+            git rebase -X theirs origin/main
+            git push
+          }
+
+      - name: Upload HTML report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-report
+          path: newman-report.html
+          retention-days: 14
+
+      - name: Enforce test result
+        if: steps.newman.outcome == 'failure'
+        run: |
+          echo "API assertions failed — failing the build."
+          exit 1
