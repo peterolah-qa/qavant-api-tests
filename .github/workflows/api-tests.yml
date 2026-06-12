@@ -59,6 +59,19 @@ jobs:
             git push
           }
 
+      # ---------- htmlextra report -> GitHub Pages (published on every run) ----------
+      - name: Prepare report site
+        if: always() && github.event_name != 'pull_request'
+        run: mkdir -p report-site && cp newman-report.html report-site/index.html
+
+      - name: Publish report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        if: always() && github.event_name != 'pull_request'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: report-site
+
       - name: Upload HTML report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
