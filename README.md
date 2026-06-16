@@ -1,4 +1,5 @@
 # qavant-api-tests
+[![API Tests](https://github.com/peterolah-qa/qavant-api-tests/actions/workflows/api-tests.yml/badge.svg)](https://github.com/peterolah-qa/qavant-api-tests/actions/workflows/api-tests.yml)
 
 REST API test suite (**Postman** collection, runnable headless with **Newman**) by Peter — Qavant.
 
