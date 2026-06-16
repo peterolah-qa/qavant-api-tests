@@ -10,7 +10,7 @@ Two layers in one collection:
    lifecycle and **documents the API's quirks** instead of hiding them.
 2. **Production contract** (folder 5) against the live **[qavant.dev](https://qavant.dev)** —
    status codes, security headers and cache policy. This is the HTTP layer beneath the
-   [Playwright UI suite](https://github.com/Pppete899/qavant-tests).
+   [Playwright UI suite](https://github.com/peterolah-qa/qavant-tests).
 
 ## What it checks
 
